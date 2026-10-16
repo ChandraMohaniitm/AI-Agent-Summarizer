@@ -15,9 +15,39 @@ load_dotenv()
 app = FastAPI(title="Briefly AI Article Summarizer")
 
 PAGE = """<!doctype html><html lang="en"><head>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Briefly — AI Article Summarizer</title>
 <style>
+#summary {
+    white-space: normal;
+    line-height: 1.8;
+}
+
+#summary h1,
+#summary h2,
+#summary h3 {
+    color: #a5b4fc;
+    margin-top: 20px;
+}
+
+#summary strong {
+    color: #ffffff;
+}
+
+#summary ul,
+#summary ol {
+    padding-left: 24px;
+}
+
+#summary li {
+    margin-bottom: 10px;
+}
+
+#summary p {
+    margin-bottom: 14px;
+}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b1120;color:#eef2ff;font-family:Arial,sans-serif;display:grid;place-items:center;padding:24px}
 main{width:100%;max-width:780px}.brand{text-align:center;font-size:48px;font-weight:800;margin:0}.brand span{color:#818cf8}
 .sub{text-align:center;color:#a5b4fc;margin:12px 0 30px;line-height:1.6}
@@ -37,7 +67,9 @@ button:disabled{opacity:.6;cursor:wait}#status{min-height:24px;text-align:center
 const form=document.getElementById('form'),btn=document.getElementById('btn');
 form.addEventListener('submit',async e=>{e.preventDefault();const status=document.getElementById('status'),result=document.getElementById('result'),summary=document.getElementById('summary');
 btn.disabled=true;btn.textContent='Summarizing...';status.textContent='Fetching article and generating summary...';result.style.display='none';summary.textContent='';
-try{const res=await fetch('/summarize',{method:'POST',body:new FormData(form)});const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||'Request failed.');summary.textContent=data.summary;result.style.display='block';status.textContent='';}
+try{const res=await fetch('/summarize',{method:'POST',body:new FormData(form)});const data=await res.json();if(!res.ok||data.error)throw new Error(data.error||'Request failed.');summary.innerHTML = DOMPurify.sanitize(
+    marked.parse(data.summary)
+);result.style.display='block';status.textContent='';}
 catch(err){status.textContent=err.message||'Something went wrong.'}finally{btn.disabled=false;btn.textContent='Summarize article'}});
 </script></body></html>"""
 
